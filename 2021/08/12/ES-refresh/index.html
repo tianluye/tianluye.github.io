@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>ES refresh</title>
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css">
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css">
+    
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <a id="cover"></a>
+    <div id="header">
+    <div class="header">
+        <div class="vertical">
+            <div class="inner">
+                <h1 class="header-subtitle">ES refresh</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2021-08-12
+                        </span>
+                        
+                            <span id="/2021/08/12/ES-refresh/" class="leancloud_visitors" data-flag-title="ES refresh">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/08/12/ES-refresh/"></span>
+                        </span>  
+                    </p>                 
+                </div>
+            </div>
+        </div>
+        <canvas id="articleHeaderCanvas"></canvas>
+    </div>
+</div>
+    <div id="container">
+    <div id="content">
+        <div id="article">
+    <div class="toc"></div>
+    <div class="article-body">
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近做了 <strong>ES 数据异构</strong> 这个项目，大致就是涉及宽表，将 Mysql 中若干张表的数据整合到 ES 中。项目中使用 <strong>Rabbit MQ</strong> 做消息同步，若指定表的数据发生变更，则会推送一条消息到 MQ 服务器上，然后再客户端进行消费，将变更的数据刷新到 ES 中。</p>
+<p>大致的设计流程如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/00166.png" alt="image"></p>
+<hr>
+<h3 id="问题起因"><a href="#问题起因" class="headerlink" title="问题起因"></a>问题起因</h3><p>业务方在操作波次下发后，前端会再次请求查询接口，返回渲染页面。但是没有将最新的结果加载出来，必须要业务方再次点击查询按钮，才可以正确显示操作后的结果。</p>
+<p>首先，我们需要明确的是： Elastic Search 是  <font color=#0099ff>近实时搜索</font> ！如果想要实时搜索，那么就不要选择使用 ES 进行存储了。至于原因，后面再进行分析。</p>
+<blockquote>
+<p> 尽管刷新是比提交轻量很多的操作，它还是会有性能开销。 当写测试的时候， 手动刷新很有用，但是不要在生产环境下每次索引一个文档都去手动刷新。 相反，你的应用需要意识到 Elasticsearch 的近实时的性质，并接受它的不足。 </p>
+</blockquote>
+<p>除此之外，可以看到设计中，是将消息推送到 MQ 服务上后，再由消费者进行消费的，这个过程，也会带来一定的延迟。</p>
+<hr>
+<h3 id="解决问题的思路"><a href="#解决问题的思路" class="headerlink" title="解决问题的思路"></a>解决问题的思路</h3><h4 id="1、延迟加载"><a href="#1、延迟加载" class="headerlink" title="1、延迟加载"></a>1、延迟加载</h4><p>考虑使用 sleep 来延迟操作，但是没法保证一定准确，因为具体的业务处理时间和 ES 刷盘耗时未知。</p>
+<h4 id="2、调整数据刷新方案"><a href="#2、调整数据刷新方案" class="headerlink" title="2、调整数据刷新方案"></a>2、调整数据刷新方案</h4><p> 如果需要调整数据刷新方案，则有三种途径： </p>
+<ul>
+<li>设置数据刷新间隔：<code>refresh_interval</code>。</li>
+<li>调用数据刷新接口：<code>_refresh</code>。</li>
+<li>设置数据刷新策略：<code>RefreshPolicy</code>。</li>
+</ul>
+<h5 id="2-1、在ELK中，ElasticSearch-的主要应用在于大量写日志，而非近实时搜索，此时可以增大刷新间隔。如下："><a href="#2-1、在ELK中，ElasticSearch-的主要应用在于大量写日志，而非近实时搜索，此时可以增大刷新间隔。如下：" class="headerlink" title="2.1、在ELK中，ElasticSearch 的主要应用在于大量写日志，而非近实时搜索，此时可以增大刷新间隔。如下："></a>2.1、在ELK中，ElasticSearch 的主要应用在于大量写日志，而非近实时搜索，此时可以增大刷新间隔。如下：</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># 调整所有index的刷新间隔位5分钟</span><br><span class="line">PUT</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;: &#123;</span><br><span class="line">    &quot;refresh_interval&quot;: &quot;5m&quot; </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 调整指定index的刷新间隔为180秒</span><br><span class="line">PUT /order_log</span><br><span class="line">&#123;</span><br><span class="line">  &quot;settings&quot;: &#123;</span><br><span class="line">    &quot;refresh_interval&quot;: &quot;180s&quot; </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h5 id="2-2、可以手动调用ElasticSearch提供的API进行数据刷新，如下："><a href="#2-2、可以手动调用ElasticSearch提供的API进行数据刷新，如下：" class="headerlink" title="2.2、可以手动调用ElasticSearch提供的API进行数据刷新，如下："></a>2.2、可以手动调用ElasticSearch提供的API进行数据刷新，如下：</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 刷新全部index的数据</span><br><span class="line">POST /_refresh </span><br><span class="line"></span><br><span class="line"># 刷新指定index的数据</span><br><span class="line">POST /user/_refresh</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-3、枚举org-elasticsearch-action-support-WriteRequest-RefreshPolicy定义了三种策略："><a href="#2-3、枚举org-elasticsearch-action-support-WriteRequest-RefreshPolicy定义了三种策略：" class="headerlink" title="2.3、枚举org.elasticsearch.action.support.WriteRequest.RefreshPolicy定义了三种策略："></a>2.3、枚举<code>org.elasticsearch.action.support.WriteRequest.RefreshPolicy</code>定义了三种策略：</h5><ul>
+<li><p><code>RefreshPolicy#IMMEDIATE</code>:</p>
+<blockquote>
+<p>请求向ElasticSearch提交了数据，立即进行数据刷新，然后再结束请求。<br>优点：实时性高、操作延时短。<br>缺点：资源消耗高。</p>
+</blockquote>
+</li>
+<li><p><code>RefreshPolicy#WAIT_UNTIL</code>:</p>
+<blockquote>
+<p>请求向ElasticSearch提交了数据，等待数据完成刷新，然后再结束请求。<br>优点：实时性高、操作延时长。<br>缺点：资源消耗低。</p>
+</blockquote>
+</li>
+<li><p><code>RefreshPolicy#NONE</code>:</p>
+<blockquote>
+<p>默认策略。<br>请求向ElasticSearch提交了数据，不关系数据是否已经完成刷新，直接结束请求。<br>优点：操作延时短、资源消耗低。<br>缺点：实时性低。</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * ElasticSearch立即更新的示例代码</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">refreshImmediatelyTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//删除操作</span></span><br><span class="line">    client.prepareDelete(<span class="string">&quot;index&quot;</span>, <span class="string">&quot;type&quot;</span>, <span class="string">&quot;1&quot;</span>).setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).get();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//索引操作</span></span><br><span class="line">    client.prepareIndex(<span class="string">&quot;index&quot;</span>, <span class="string">&quot;type&quot;</span>, <span class="string">&quot;2&quot;</span>).setSource(<span class="string">&quot;&#123;\&quot;age\&quot;:1&#125;&quot;</span>).setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).get();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//更新操作</span></span><br><span class="line">    client.prepareUpdate(<span class="string">&quot;index&quot;</span>, <span class="string">&quot;type&quot;</span>, <span class="string">&quot;3&quot;</span>).setDoc(<span class="string">&quot;&#123;\&quot;age\&quot;:1&#125;&quot;</span>).setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).get();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//批量操作</span></span><br><span class="line">    client.prepareBulk()</span><br><span class="line">            .add(client.prepareDelete(<span class="string">&quot;index&quot;</span>, <span class="string">&quot;type&quot;</span>, <span class="string">&quot;1&quot;</span>))</span><br><span class="line">            .add(client.prepareIndex(<span class="string">&quot;index&quot;</span>, <span class="string">&quot;type&quot;</span>, <span class="string">&quot;2&quot;</span>).setSource(<span class="string">&quot;&#123;\&quot;age\&quot;:1&#125;&quot;</span>))</span><br><span class="line">            .add(client.prepareUpdate(<span class="string">&quot;index&quot;</span>, <span class="string">&quot;type&quot;</span>, <span class="string">&quot;3&quot;</span>).setDoc(<span class="string">&quot;&#123;\&quot;age\&quot;:1&#125;&quot;</span>))</span><br><span class="line">            .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).get();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="3、最终解决的方案"><a href="#3、最终解决的方案" class="headerlink" title="3、最终解决的方案"></a>3、最终解决的方案</h4><p>最后分析，还是选择使用 <code>refresh</code> 操作来进行立即更新。因为项目中的 ES 客户端是 Jest，所以调整后的代码为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">saveOrUpdate</span><span class="params">(WellenRoute wellenRoute, <span class="keyword">boolean</span> isRefreshNow)</span> </span>&#123;</span><br><span class="line">    LOGGER.info(<span class="string">&quot;波次功能列表数据同步ES索引 WellenRoute: &#123;&#125;, isRefreshNow: &#123;&#125;&quot;</span>, JsonTools.defaultMapper().toJson(wellenRoute), isRefreshNow);</span><br><span class="line">    JestResult jestResult;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Index.Builder route = <span class="keyword">new</span> Index.Builder(wellenRoute).index(WELLEN_INDEX).type(<span class="string">&quot;wellenRoute&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (isRefreshNow) &#123;</span><br><span class="line">            route.setParameter(<span class="string">&quot;refresh&quot;</span>, <span class="string">&quot;wait_for&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Index index = route.build();</span><br><span class="line">        jestResult = jestMultiThreadClient.execute(index);</span><br><span class="line">        <span class="keyword">if</span> (jestResult == <span class="keyword">null</span> || !jestResult.isSucceeded()) &#123;</span><br><span class="line">            LOGGER.error(<span class="string">&quot;【出库组-波次功能列表数据刷新到 ES失败】: &#123;&#125;&quot;</span>, jestResult == <span class="keyword">null</span> ? <span class="string">&quot;&quot;</span> : jestResult.getJsonString());</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BblBusinessException(AtMessageCode.BAD_REQUEST, <span class="string">&quot;波次功能列表数据刷新到ES失败&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        LOGGER.error(<span class="string">&quot;【出库组-波次功能列表数据刷新到ES异常】: &#123;&#125;&quot;</span>, ExceptionTools.getExceptionStackTrace(e));</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> BblBusinessException(AtMessageCode.BAD_REQUEST, <span class="string">&quot;波次功能列表数据刷新到 ES异常&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> jestResult == <span class="keyword">null</span> ? <span class="keyword">false</span> : jestResult.isSucceeded();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><strong>ES 客户端 Jest 指南</strong>：<a target="_blank" rel="noopener" href="https://github.com/searchbox-io/Jest/tree/master/jest">https://github.com/searchbox-io/Jest/tree/master/jest</a></p>
+<p><strong>refresh 参考</strong>：<a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/elasticsearch/reference/6.8/docs-refresh.html">https://www.elastic.co/guide/en/elasticsearch/reference/6.8/docs-refresh.html</a></p>
+
+        <p class="suffix-end">__END__</p>
+        <div class="suffix-box">
+            <div class="suffix-box-left">
+                <img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg" alt="tianluye">
+            </div>
+            <div class="suffix-box-right">
+                <span class="suffix-box-title">文章作者</span>：tianluye
+                <br>
+                <span class="suffix-box-title">文章出处</span>：<a href="https://tianluye.github.io/2021/08/12/ES_refresh/" target="_blank">ES refresh</a>
+                <br>
+                <span class="suffix-box-title">作者签名</span>：每天进步一点点，加油！
+                <br>
+                <span class="suffix-box-title">关于主题</span>：<a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - Live For Code</a>
+                <br>
+                <span class="suffix-box-title">版权声明</span>：文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+                <br>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div class="article-footer">
+        
+            <div class="category">
+                分类：
+                
+                    <a href="/categories/ElasticSerach/">ElasticSerach</a>
+                
+            </div>
+        
+        
+            <div class="tag">
+                标签：
+                
+                    <a href="/tags/%E6%90%9C%E7%B4%A2/">搜索</a>
+                
+                    <a href="/tags/ElasticSerach/">ElasticSerach</a>
+                
+            </div>
+        
+        <div class="article-prev-next">
+            
+                <a href="/2021/08/12/Elastic-Search-%E8%BF%91%E5%AE%9E%E6%97%B6%E6%90%9C%E7%B4%A2%E5%88%86%E6%9E%90/" class="prev-prefix">« </a> 上一篇：    <a href="/2021/08/12/Elastic-Search-%E8%BF%91%E5%AE%9E%E6%97%B6%E6%90%9C%E7%B4%A2%E5%88%86%E6%9E%90/" title="发布于 2021-08-12 06:00">Elastic Search 近实时搜索分析</a>
+                <br>
+            
+            
+                <a href="/2021/08/11/DeclareParents%E6%B3%A8%E8%A7%A3/" class="next-prefix">» </a> 下一篇：    <a href="/2021/08/11/DeclareParents%E6%B3%A8%E8%A7%A3/" title="发布于 2021-08-11 03:30">DeclareParents注解</a>
+            
+        </div>
+    </div>
+    
+    <div class="article-comments">
+        <div class="comments-title">
+            评论列表
+        </div>
+        <div class="comments-content">
+        </div>
+    </div>
+
+</div>
+
+    </div>
+</div>
+    <div id="footer"></div>
+
+<script src='https://unpkg.com/mermaid@7.1.2/dist/mermaid.min.js'></script>
+<script>
+    if (window.mermaid) {
+      mermaid.initialize({theme: 'forest'});
+    }
+</script>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar"></div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user"><span></span></div>        
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul></ul> 
+            </div> 
+            <div class="menu-link"></div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/APlayer.css">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js"></script>
+        <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+    
+    
+    <div class="wrap-right"></div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : 'tianluye',
+        GitHubRepositories : 'tianluye.github.io',
+
+        BlogUser      : 'Tian Lu Ye',
+        BlogAvatar    : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg',
+        BlogStartDate : '2021-07-17',
+
+        WebsiteTitleBlur         : '(◍´꒳`◍) tly blog',
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : '(*´∇｀*) 欢迎回来!',
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/logo.png',
+
+        ProgressBar: {
+            id       : 'topProgressBar',
+            color    : '#77B6FF',
+            height   : '2px',
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound: {
+                tension  : 16,
+                friction : 5
+            },
+            spinner: {
+                id     : 'spinner',
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : '#F0F0F0',
+                    stroke     : '#272633',
+                    base       : '',
+                    child      : '#272633'
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : 'rgba(255, 255, 255, .2)',
+            clearOffset : 0.3
+        },
+
+        ArticleHeaderAnimationRendered : false,
+        ArticleHeaderAnimation         : {
+            triW                  : 14,
+            triH                  : 20,
+            neighbours            : [
+                
+                    'side',
+                
+                    'top',
+                
+                    'bottom',
+                
+            ],
+            speedTrailAppear      : 0.1,
+            speedTrailDisappear   : 0.1,
+            speedTriOpen          : 1,
+            trailMaxLength        : 30,
+            trailIntervalCreation : 100,
+            delayBeforeDisappear  : 2,
+            colors                : [
+                
+                    '#96EDA6',
+                
+                    '#5BC6A9',
+                
+                    '#38668C',
+                
+                    '#374D84',
+                
+                    '#BED5CB',
+                
+                    '#62ADC6',
+                
+                    '#8EE5DE',
+                
+                    '#304E7B',
+                
+            ]
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : '60%',
+            colorBrightness  : '50%',
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : 'random',
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home.jpg',
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home2.jpg',
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home3.jpg',
+            
+        ],
+        HomeBannerText  : '道无涯,学无止境',
+
+        ArticleHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/header/article.jpg',
+            
+        ],
+
+        OtherBannerText : '',
+
+        MenuList : [
+            
+                {
+                    name   : '首页',
+                    href   : '/',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '标签',
+                    href   : '/tags',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '分类',
+                    href   : '/categories',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '归档',
+                    href   : '/archives',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '赞赏',
+                    href   : '/donate',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '关于',
+                    href   : '/about',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '订阅',
+                    href   : '/atom.xml',    
+                    target : '_blank',
+                    class  : ''
+                },
+            
+                {
+                    name   : '搜索',
+                    href   : '',    
+                    target : '',
+                    class  : 'search'
+                },
+            
+                {
+                    name   : '留言板',
+                    href   : '/comment',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '友情链接',
+                    href   : '/friend',    
+                    target : '',
+                    class  : ''
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        icon : 'icon-weibo', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-wechat', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-qq', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-github', 
+                        url  : 'https://github.com/tianluye'
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : {
+            icon    : 'like-fill',
+            left    : '人生若只如初见',
+            right   : '何事秋风悲画扇'
+        },
+        ThemeInfo   : true,
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                'Based on cnblogs theme SimpleMemory.',
+                            
+                                '',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'SimpleMemory Author:',
+                            
+                                'BNDong',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'Theme:',
+                            
+                                'LiveForCode',
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : '',
+
+        Donate : {
+            paypal  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/alipay.jpg',
+            bitcoin : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/wechat.jpg',
+            alipay  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/alipay.jpg',
+            wechat  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/wechat.jpg'
+        },
+
+        Code : {
+            style : 'normal'
+        },  
+
+        Search : {
+            applicationID : '010C3EANT8',
+            apiKey        : 'c7abab9f11b79102b9aff7fe6d41447d',
+            indexName     : 'Notes',
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : '搜索',
+                empty       : '未发现与 「${query}」 相关的内容',
+                stats       : '${hits} 条相关条目，使用了 ${time} 毫秒',
+            }
+        }, 
+
+        Valine : {
+            switch         : true,
+            el             : '.comments-content',
+            appId          : 'mFAYekF8kAQHI6MrWrBjbpkp-gzGzoHsz',
+            appKey         : 'RCFNxd1pPweMKgA5ccMDMh0V',
+            placeholder    : '你是我一生只会遇见一次的惊喜...',
+            avatar         : 'mm',
+            meta           : 'nick,mail,link',
+            requiredFields : 'nick,mail',
+            pageSize       : 5,
+            lang           : 'zh-cn',
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : '.toc',
+            contentSelector       : '.article-body',
+            headingSelector       : 'h1, h2, h3, h4, h5',
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : '.toc',
+            positionFixedClass    : 'toc-fixed',
+            fixedSidebarOffset    : '',
+        },
+
+        Require : {
+            baseUrl     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/',
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : 'Meting'
+        },
+        APlayer : {
+            container : '.aplayer',
+            fixed     : true,
+            autoplay  : false,
+            loop      : 'all',
+            order     : 'random',
+            preload   : 'auto',
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : 'aLIEz',
+                        artist : 'mizuki（瑞葵）',
+                        cover  : '/music/cover/aLIEz.jpg',
+                        url    : '/music/song/aLIEz.mp3',
+                        lrc    : '/music/lrc/aLIEz.lrc'
+                    },
+                
+                    {
+                        name   : 'Endless Tears',
+                        artist : 'CLIFF EDGE',
+                        cover  : '/music/cover/Endless Tears.jpg',
+                        url    : '/music/song/Endless Tears.mp3',
+                        lrc    : '/music/lrc/Endless Tears.lrc'
+                    },
+                
+                    {
+                        name   : 'Miracle',
+                        artist : 'Cascada',
+                        cover  : '/music/cover/Miracle.jpg',
+                        url    : '/music/song/Miracle.mp3',
+                        lrc    : '/music/lrc/Miracle.lrc'
+                    },
+                
+                    {
+                        name   : 'Roll The Dice',
+                        artist : '高珊',
+                        cover  : '/music/cover/Roll The Dice.jpg',
+                        url    : '/music/song/Roll The Dice.mp3',
+                        lrc    : '/music/lrc/Roll The Dice.lrc'
+                    },
+                
+                    {
+                        name   : 'See You Again',
+                        artist : 'Charlie Puth, Wiz Khalifa',
+                        cover  : '/music/cover/See You Again.jpg',
+                        url    : '/music/song/See You Again.mp3',
+                        lrc    : '/music/lrc/See You Again.lrc'
+                    },
+                
+                    {
+                        name   : 'Traveling Light',
+                        artist : 'Joel Hanson, Sara Groves',
+                        cover  : '/music/cover/Traveling Light.jpg',
+                        url    : '/music/song/Traveling Light.mp3',
+                        lrc    : '/music/lrc/Traveling Light.lrc'
+                    },
+                
+                    {
+                        name   : '痴心绝对',
+                        artist : '李圣杰',
+                        cover  : '/music/cover/痴心绝对.jpg',
+                        url    : '/music/song/痴心绝对.mp3',
+                        lrc    : '/music/lrc/痴心绝对.lrc'
+                    },
+                
+                    {
+                        name   : '好想大声说爱你',
+                        artist : 'BAAD（バード）',
+                        cover  : '/music/cover/好想大声说爱你.jpg',
+                        url    : '/music/song/好想大声说爱你.mp3',
+                        lrc    : '/music/lrc/好想大声说爱你.lrc'
+                    },
+                
+            ]
+        },
+        Meting : {
+            id       : '3778678', 
+            lrcshow  : false, 
+            server   : 'netease', 
+            type     : 'playlist', 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : 'all', 
+            order    : 'random', 
+            preload  : 'auto', 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        LazyLoad : {
+            default : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/lazyload.svg'
+        },
+  
+        Style : {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/APlayer.css',
+            archive          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/archive.css',
+            donate           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/donate.css',
+            fancybox         : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/jquery.fancybox.css',
+            footer           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/footer.css',
+            iconfont         : 'https://at.alicdn.com/t/font_1546312_l3yohatebw.css',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/index.css',
+            menuBubble       : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/menu-bubble.css',
+            page             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/page.css',
+            post             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css',
+            search           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css',
+            tocbot           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/tocbot.css',
+            normal           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css',
+            night            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/night.css',
+            clipboard        : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/clipboard.css'
+        },
+
+        Script: {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js',
+            config           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.config.js',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js',
+            instantSearch    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js',
+            jQuery           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js',
+            loading          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/loading.js',
+            meting           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js',
+            iscroll          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js',
+            require          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.min.js'
+        },
+
+        Font: {
+            LongCang   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css',
+            Monda      : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css',
+            NotoSansSC : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css',
+            Playball   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css',
+            PTMono     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css',
+            RobotoSlab : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css',
+            Rosario    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css',
+            UbuntuMono : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css'
+        },
+
+        Suffix : {
+            about : '简单地活着, 肆意又精彩.'
+        },
+            
+        Theme : {
+            url  : 'https://github.com/first19326/Hexo-LiveForCode',
+            name : 'Hexo - Live For Code'
+        }  
+    };
+</script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js"></script>
+</body>
+</html>

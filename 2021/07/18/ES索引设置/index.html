@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>ES索引设置</title>
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css">
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css">
+    
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <a id="cover"></a>
+    <div id="header">
+    <div class="header">
+        <div class="vertical">
+            <div class="inner">
+                <h1 class="header-subtitle">ES索引设置</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2021-07-18
+                        </span>
+                        
+                            <span id="/2021/07/18/ES索引设置/" class="leancloud_visitors" data-flag-title="ES索引设置">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/07/18/ES索引设置/"></span>
+                        </span>  
+                    </p>                 
+                </div>
+            </div>
+        </div>
+        <canvas id="articleHeaderCanvas"></canvas>
+    </div>
+</div>
+    <div id="container">
+    <div id="content">
+        <div id="article">
+    <div class="toc"></div>
+    <div class="article-body">
+        <p>可以按索引设置索引级别，设置可能是：</p>
+<ul>
+<li>静态：它们只能在索引创建时或在关闭的索引上设置</li>
+<li>动态：可以使用 <code>update-index-settings</code> API在活动索引上更改它们</li>
+</ul>
+<blockquote>
+<p>更改关闭的索引上的静态或动态索引设置可能导致不正确的设置，在不删除和重新创建索引的情况下，不可能纠正这些设置。</p>
+</blockquote>
+<h3 id="静态索引设置"><a href="#静态索引设置" class="headerlink" title="静态索引设置"></a>静态索引设置</h3><p>下面是与任何特定索引模块无关的所有静态索引设置的列表：</p>
+<h5 id="index-number-of-shards"><a href="#index-number-of-shards" class="headerlink" title="index.number_of_shards"></a>index.number_of_shards</h5><ul>
+<li>索引应该具有的分片的数量，默认为 5。此设置只能在创建索引时设置，它不能在关闭的索引上更改，注意：每个索引的分片数量限制为 1024个，这种限制是一种安全限制，以防止意外地创建可能由于资源分配而破坏集群稳定的索引。可以在集群的每个节点上通过指定系统变量 <code>export ES_JAVA_OPTS=&quot;-Des.index.max_number_of_shards=128&quot;</code> 来修改该限制。</li>
+</ul>
+<h5 id="index-shard-check-on-startup"><a href="#index-shard-check-on-startup" class="headerlink" title="index.shard.check_on_startup"></a>index.shard.check_on_startup</h5><ul>
+<li>分片在打开之前是否应该检查是否损坏，当检测到损坏时，它将阻止碎片被打开，接受：<ol>
+<li>false：（默认）打开碎片时不要检查是否有损坏。</li>
+<li>checksum：检查物理损坏</li>
+<li>true：检查物理和逻辑损坏，就CPU和内存使用而言，这要昂贵得多</li>
+</ol>
+</li>
+</ul>
+<h5 id="index-codec"><a href="#index-codec" class="headerlink" title="index.codec"></a>index.codec</h5><ul>
+<li>默认值使用 <code>LZ4</code> 压缩压缩存储的数据，但是可以将这个值设置为 <code>best_compression</code>，它使用 <code>DEFLATE</code> 获得更高的压缩比，代价是降低存储字段的性能。如果你正在更新压缩类型，则新的压缩类型将在段合并后应用，段合并可以使用强制合并来强制执行。</li>
+</ul>
+<h5 id="index-routing-partition-size"><a href="#index-routing-partition-size" class="headerlink" title="index.routing_partition_size"></a>index.routing_partition_size</h5><ul>
+<li>自定义路由值可以转到的碎片数，默认值为1，只能在创建索引时设置，这个值必须小于 <code>index.number_of_shards</code>，除非 <code>index.number_of_shards</code> 值也是1。</li>
+</ul>
+<h5 id="index-load-fixed-bitset-filters-eagerly"><a href="#index-load-fixed-bitset-filters-eagerly" class="headerlink" title="index.load_fixed_bitset_filters_eagerly"></a>index.load_fixed_bitset_filters_eagerly</h5><ul>
+<li>指示是否为嵌套查询预加载缓存过滤器，可能的值为true（默认值）和false。</li>
+</ul>
+<h3 id="动态索引设置"><a href="#动态索引设置" class="headerlink" title="动态索引设置"></a>动态索引设置</h3><p>以下是与任何特定索引模块无关的所有动态索引设置列表：</p>
+<h5 id="index-number-of-replicas"><a href="#index-number-of-replicas" class="headerlink" title="index.number_of_replicas"></a>index.number_of_replicas</h5><ul>
+<li>每个主碎片拥有的副本数量，默认为1。</li>
+</ul>
+<h5 id="index-auto-expand-replicas"><a href="#index-auto-expand-replicas" class="headerlink" title="index.auto_expand_replicas"></a>index.auto_expand_replicas</h5><ul>
+<li>根据集群中数据节点的数量自动扩展副本的数量，设置为以破折号分隔的下界和上界（例如0-5），或将all用于上界（例如0-all），默认为false（即禁用）。注意，自动扩展的副本数量没有考虑任何其他分配规则，比如碎片分配感知、过滤或每个节点的总碎片，如果适用的规则阻止分配所有副本，则可能导致集群健康状态变为黄色。</li>
+</ul>
+<h5 id="index-search-idle-after"><a href="#index-search-idle-after" class="headerlink" title="index.search.idle.after"></a>index.search.idle.after</h5><ul>
+<li>一个分片在被认为是搜索空闲之前不能接收搜索或获取请求的时间（默认是30s）。</li>
+</ul>
+<h5 id="index-refresh-interval"><a href="#index-refresh-interval" class="headerlink" title="index.refresh_interval"></a>index.refresh_interval</h5><ul>
+<li>多久执行一次刷新操作，使最近对索引的更改对搜索可见，默认为1s，可以设置为-1以禁用刷新。如果没有显式设置此设置，至少在 <code>index.search.idle.after</code> 秒内没有看到搜索流量的碎片在收到搜索请求之前不会收到后台刷新，当刷新挂起时，搜索到空闲碎片，将等待下一次后台刷新（在1秒内）。此行为的目的是在不执行搜索的默认情况下自动优化批量索引，为了避免这种行为，应该将显式值1s设置为刷新间隔。</li>
+</ul>
+<h5 id="index-max-result-window"><a href="#index-max-result-window" class="headerlink" title="index.max_result_window"></a>index.max_result_window</h5><ul>
+<li>此索引的搜索 <code>from + size</code> 的最大值，默认为 10000，搜索请求占用的堆内存和时间与 <code>from + size</code> 成正比，这限制了内存。</li>
+</ul>
+<h5 id="index-max-inner-result-window"><a href="#index-max-inner-result-window" class="headerlink" title="index.max_inner_result_window"></a>index.max_inner_result_window</h5><ul>
+<li>from + size的最大值，用于将内部命中定义和顶部命中聚合到此索引，默认为100，内部命中和顶部命中聚合占用堆内存，并且时间与from + size成正比，这限制了内存。</li>
+</ul>
+<h5 id="index-max-rescore-window"><a href="#index-max-rescore-window" class="headerlink" title="index.max_rescore_window"></a>index.max_rescore_window</h5><ul>
+<li>在此索引的搜索中，rescore请求的window_size的最大值，默认为index.max_result_window，其默认值为10000，搜索请求占用堆内存，时间与max(window_size, from + size)成正比，这限制了内存。</li>
+</ul>
+<h5 id="index-max-docvalue-fields-search"><a href="#index-max-docvalue-fields-search" class="headerlink" title="index.max_docvalue_fields_search"></a>index.max_docvalue_fields_search</h5><ul>
+<li>查询中允许的docvalue_fields的最大数量，默认为100，Doc-value字段代价高昂，因为它们可能导致每个字段每个文档的搜索。</li>
+</ul>
+<h5 id="index-max-script-fields"><a href="#index-max-script-fields" class="headerlink" title="index.max_script_fields"></a>index.max_script_fields</h5><ul>
+<li>查询中允许的最大script_fields数量，默认为32。</li>
+</ul>
+<h5 id="index-max-ngram-diff"><a href="#index-max-ngram-diff" class="headerlink" title="index.max_ngram_diff"></a>index.max_ngram_diff</h5><ul>
+<li>NGramTokenizer和NGramTokenFilter的min_gram和max_gram之间允许的最大差异，默认为1。</li>
+</ul>
+<h5 id="index-max-shingle-diff"><a href="#index-max-shingle-diff" class="headerlink" title="index.max_shingle_diff"></a>index.max_shingle_diff</h5><ul>
+<li>对于ShingleTokenFilter，max_shingle_size和min_shingle_size之间允许的最大差异，默认为3。</li>
+</ul>
+<h5 id="index-blocks-read-only"><a href="#index-blocks-read-only" class="headerlink" title="index.blocks.read_only"></a>index.blocks.read_only</h5><ul>
+<li>设置为true使索引和索引元数据只读，设置为false允许写入和元数据更改。</li>
+</ul>
+<h5 id="index-blocks-read-only-allow-delete"><a href="#index-blocks-read-only-allow-delete" class="headerlink" title="index.blocks.read_only_allow_delete"></a>index.blocks.read_only_allow_delete</h5><ul>
+<li>与index.blocks.read_only相同，但是允许删除索引来释放资源。</li>
+</ul>
+<h5 id="index-blocks-read"><a href="#index-blocks-read" class="headerlink" title="index.blocks.read"></a>index.blocks.read</h5><ul>
+<li>设置为true以禁用对索引的读取操作。</li>
+</ul>
+<h5 id="index-blocks-write"><a href="#index-blocks-write" class="headerlink" title="index.blocks.write"></a>index.blocks.write</h5><ul>
+<li>设置为true可禁用对索引的数据写操作，与read_only不同，此设置不影响元数据，例如，可以用write块关闭索引，但不能用read_only块关闭索引。</li>
+</ul>
+<h5 id="index-blocks-metadata"><a href="#index-blocks-metadata" class="headerlink" title="index.blocks.metadata"></a>index.blocks.metadata</h5><ul>
+<li>设置为true可禁用索引元数据的读写。</li>
+</ul>
+<h5 id="index-max-refresh-listeners"><a href="#index-max-refresh-listeners" class="headerlink" title="index.max_refresh_listeners"></a>index.max_refresh_listeners</h5><ul>
+<li>索引的每个碎片上可用的刷新侦听器的最大数量，这些侦听器用于实现refresh=wait_for。</li>
+</ul>
+<h5 id="index-analyze-max-token-count"><a href="#index-analyze-max-token-count" class="headerlink" title="index.analyze.max_token_count"></a>index.analyze.max_token_count</h5><ul>
+<li>使用_analyze API可以生成的最大令牌数量，默认为10000。</li>
+</ul>
+<h5 id="index-highlight-max-analyzed-offset"><a href="#index-highlight-max-analyzed-offset" class="headerlink" title="index.highlight.max_analyzed_offset"></a>index.highlight.max_analyzed_offset</h5><ul>
+<li>为高亮显示请求分析的最大字符数，此设置仅适用于在索引没有偏移量或术语向量的文本上请求高亮显示时，默认为1000000。</li>
+</ul>
+<h5 id="index-max-terms-count"><a href="#index-max-terms-count" class="headerlink" title="index.max_terms_count"></a>index.max_terms_count</h5><ul>
+<li>可以在terms查询中使用的术语的最大数量，默认为65536。</li>
+</ul>
+<h5 id="index-max-regex-length"><a href="#index-max-regex-length" class="headerlink" title="index.max_regex_length"></a>index.max_regex_length</h5><ul>
+<li>可用于Regexp查询的正则表达式的最大长度，默认为1000。</li>
+</ul>
+<h5 id="index-routing-allocation-enable"><a href="#index-routing-allocation-enable" class="headerlink" title="index.routing.allocation.enable"></a>index.routing.allocation.enable</h5><ul>
+<li>控制此索引的碎片分配，它可以被设置为：<ol>
+<li>all（默认值）— 允许为所有碎片分配碎片。</li>
+<li>primaries — 只允许为主碎片分配碎片。</li>
+<li>new_primary — 只允许为新创建的主碎片分配碎片。</li>
+<li>none — 不允许碎片分配。</li>
+</ol>
+</li>
+</ul>
+<h5 id="index-routing-rebalance-enable"><a href="#index-routing-rebalance-enable" class="headerlink" title="index.routing.rebalance.enable"></a>index.routing.rebalance.enable</h5><ul>
+<li>启用此索引的碎片重新平衡，它可以被设置为：<ol>
+<li>all（默认值）—允许对所有碎片进行碎片再平衡。</li>
+<li>primaries — 只允许对主碎片进行碎片再平衡。</li>
+<li>replicas — 只允许对复制碎片进行碎片再平衡。</li>
+<li>none — 不允许再平衡碎片。</li>
+</ol>
+</li>
+</ul>
+<h5 id="index-gc-deletes"><a href="#index-gc-deletes" class="headerlink" title="index.gc_deletes"></a>index.gc_deletes</h5><ul>
+<li>已删除文档的版本号仍可用于进一步版本化操作的时间长度，默认为60s。</li>
+</ul>
+<h5 id="index-default-pipeline"><a href="#index-default-pipeline" class="headerlink" title="index.default_pipeline"></a>index.default_pipeline</h5><ul>
+<li>此索引的默认摄取节点管道，如果设置了默认管道且管道不存在，则索引请求将失败，可以使用pipeline参数重写默认值，特殊管道名称_none表示不应该运行摄取管道。</li>
+</ul>
+<h3 id="其他索引模块中的设置"><a href="#其他索引模块中的设置" class="headerlink" title="其他索引模块中的设置"></a>其他索引模块中的设置</h3><p>其他索引设置在索引模块中可用：</p>
+<h5 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h5><ul>
+<li>用于定义分析程序、令牌器、令牌过滤器和字符过滤器的设置。</li>
+</ul>
+<h5 id="索引碎片分配"><a href="#索引碎片分配" class="headerlink" title="索引碎片分配"></a>索引碎片分配</h5><ul>
+<li>控制将碎片分配到节点的位置、时间和方式。</li>
+</ul>
+<h5 id="映射"><a href="#映射" class="headerlink" title="映射"></a>映射</h5><ul>
+<li>为索引启用或禁用动态映射。</li>
+</ul>
+<h5 id="合并"><a href="#合并" class="headerlink" title="合并"></a>合并</h5><ul>
+<li>控制后台合并进程如何合并碎片。</li>
+</ul>
+<h5 id="相似性"><a href="#相似性" class="headerlink" title="相似性"></a>相似性</h5><ul>
+<li>配置自定义相似性设置，以自定义搜索结果的评分方式。</li>
+</ul>
+<h5 id="慢日志"><a href="#慢日志" class="headerlink" title="慢日志"></a>慢日志</h5><ul>
+<li>控制记录查询和获取请求的速度。</li>
+</ul>
+<h5 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h5><ul>
+<li>配置用于访问碎片数据的文件系统类型。</li>
+</ul>
+<h5 id="事务日志"><a href="#事务日志" class="headerlink" title="事务日志"></a>事务日志</h5><ul>
+<li>控制事务日志和后台刷新操作。</li>
+</ul>
+<hr>
+<p>参考文章：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000019919494/">https://segmentfault.com/a/1190000019919494/</a></p>
+
+        <p class="suffix-end">__END__</p>
+        <div class="suffix-box">
+            <div class="suffix-box-left">
+                <img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg" alt="tianluye">
+            </div>
+            <div class="suffix-box-right">
+                <span class="suffix-box-title">文章作者</span>：tianluye
+                <br>
+                <span class="suffix-box-title">文章出处</span>：<a href="https://tianluye.github.io/2021/07/18/ES索引设置/" target="_blank">ES索引设置</a>
+                <br>
+                <span class="suffix-box-title">作者签名</span>：每天进步一点点，加油！
+                <br>
+                <span class="suffix-box-title">关于主题</span>：<a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - Live For Code</a>
+                <br>
+                <span class="suffix-box-title">版权声明</span>：文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+                <br>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div class="article-footer">
+        
+            <div class="category">
+                分类：
+                
+                    <a href="/categories/ElasticSerach/">ElasticSerach</a>
+                
+            </div>
+        
+        
+            <div class="tag">
+                标签：
+                
+                    <a href="/tags/%E6%90%9C%E7%B4%A2/">搜索</a>
+                
+                    <a href="/tags/ElasticSerach/">ElasticSerach</a>
+                
+            </div>
+        
+        <div class="article-prev-next">
+            
+                <a href="/2021/07/18/ES%E8%AE%BE%E7%BD%AE%E4%B8%8D%E5%8C%BA%E5%88%86%E5%A4%A7%E5%B0%8F%E5%86%99/" class="prev-prefix">« </a> 上一篇：    <a href="/2021/07/18/ES%E8%AE%BE%E7%BD%AE%E4%B8%8D%E5%8C%BA%E5%88%86%E5%A4%A7%E5%B0%8F%E5%86%99/" title="发布于 2021-07-18 04:48">ES设置不区分大小写</a>
+                <br>
+            
+            
+                <a href="/2021/07/18/ES%E6%96%87%E6%A1%A3%E6%93%8D%E4%BD%9C/" class="next-prefix">» </a> 下一篇：    <a href="/2021/07/18/ES%E6%96%87%E6%A1%A3%E6%93%8D%E4%BD%9C/" title="发布于 2021-07-18 04:25">ES文档操作</a>
+            
+        </div>
+    </div>
+    
+    <div class="article-comments">
+        <div class="comments-title">
+            评论列表
+        </div>
+        <div class="comments-content">
+        </div>
+    </div>
+
+</div>
+
+    </div>
+</div>
+    <div id="footer"></div>
+
+<script src='https://unpkg.com/mermaid@7.1.2/dist/mermaid.min.js'></script>
+<script>
+    if (window.mermaid) {
+      mermaid.initialize({theme: 'forest'});
+    }
+</script>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar"></div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user"><span></span></div>        
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul></ul> 
+            </div> 
+            <div class="menu-link"></div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/APlayer.css">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js"></script>
+        <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+    
+    
+    <div class="wrap-right"></div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : 'tianluye',
+        GitHubRepositories : 'tianluye.github.io',
+
+        BlogUser      : 'Tian Lu Ye',
+        BlogAvatar    : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg',
+        BlogStartDate : '2021-07-17',
+
+        WebsiteTitleBlur         : '(◍´꒳`◍) tly blog',
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : '(*´∇｀*) 欢迎回来!',
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/logo.png',
+
+        ProgressBar: {
+            id       : 'topProgressBar',
+            color    : '#77B6FF',
+            height   : '2px',
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound: {
+                tension  : 16,
+                friction : 5
+            },
+            spinner: {
+                id     : 'spinner',
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : '#F0F0F0',
+                    stroke     : '#272633',
+                    base       : '',
+                    child      : '#272633'
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : 'rgba(255, 255, 255, .2)',
+            clearOffset : 0.3
+        },
+
+        ArticleHeaderAnimationRendered : false,
+        ArticleHeaderAnimation         : {
+            triW                  : 14,
+            triH                  : 20,
+            neighbours            : [
+                
+                    'side',
+                
+                    'top',
+                
+                    'bottom',
+                
+            ],
+            speedTrailAppear      : 0.1,
+            speedTrailDisappear   : 0.1,
+            speedTriOpen          : 1,
+            trailMaxLength        : 30,
+            trailIntervalCreation : 100,
+            delayBeforeDisappear  : 2,
+            colors                : [
+                
+                    '#96EDA6',
+                
+                    '#5BC6A9',
+                
+                    '#38668C',
+                
+                    '#374D84',
+                
+                    '#BED5CB',
+                
+                    '#62ADC6',
+                
+                    '#8EE5DE',
+                
+                    '#304E7B',
+                
+            ]
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : '60%',
+            colorBrightness  : '50%',
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : 'random',
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home.jpg',
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home2.jpg',
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home3.jpg',
+            
+        ],
+        HomeBannerText  : '道无涯,学无止境',
+
+        ArticleHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/header/article.jpg',
+            
+        ],
+
+        OtherBannerText : '',
+
+        MenuList : [
+            
+                {
+                    name   : '首页',
+                    href   : '/',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '标签',
+                    href   : '/tags',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '分类',
+                    href   : '/categories',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '归档',
+                    href   : '/archives',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '赞赏',
+                    href   : '/donate',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '关于',
+                    href   : '/about',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '订阅',
+                    href   : '/atom.xml',    
+                    target : '_blank',
+                    class  : ''
+                },
+            
+                {
+                    name   : '搜索',
+                    href   : '',    
+                    target : '',
+                    class  : 'search'
+                },
+            
+                {
+                    name   : '留言板',
+                    href   : '/comment',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '友情链接',
+                    href   : '/friend',    
+                    target : '',
+                    class  : ''
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        icon : 'icon-weibo', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-wechat', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-qq', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-github', 
+                        url  : 'https://github.com/tianluye'
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : {
+            icon    : 'like-fill',
+            left    : '人生若只如初见',
+            right   : '何事秋风悲画扇'
+        },
+        ThemeInfo   : true,
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                'Based on cnblogs theme SimpleMemory.',
+                            
+                                '',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'SimpleMemory Author:',
+                            
+                                'BNDong',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'Theme:',
+                            
+                                'LiveForCode',
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : '',
+
+        Donate : {
+            paypal  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/alipay.jpg',
+            bitcoin : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/wechat.jpg',
+            alipay  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/alipay.jpg',
+            wechat  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/wechat.jpg'
+        },
+
+        Code : {
+            style : 'normal'
+        },  
+
+        Search : {
+            applicationID : '010C3EANT8',
+            apiKey        : 'c7abab9f11b79102b9aff7fe6d41447d',
+            indexName     : 'Notes',
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : '搜索',
+                empty       : '未发现与 「${query}」 相关的内容',
+                stats       : '${hits} 条相关条目，使用了 ${time} 毫秒',
+            }
+        }, 
+
+        Valine : {
+            switch         : true,
+            el             : '.comments-content',
+            appId          : 'mFAYekF8kAQHI6MrWrBjbpkp-gzGzoHsz',
+            appKey         : 'RCFNxd1pPweMKgA5ccMDMh0V',
+            placeholder    : '你是我一生只会遇见一次的惊喜...',
+            avatar         : 'mm',
+            meta           : 'nick,mail,link',
+            requiredFields : 'nick,mail',
+            pageSize       : 5,
+            lang           : 'zh-cn',
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : '.toc',
+            contentSelector       : '.article-body',
+            headingSelector       : 'h1, h2, h3, h4, h5',
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : '.toc',
+            positionFixedClass    : 'toc-fixed',
+            fixedSidebarOffset    : '',
+        },
+
+        Require : {
+            baseUrl     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/',
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : 'Meting'
+        },
+        APlayer : {
+            container : '.aplayer',
+            fixed     : true,
+            autoplay  : false,
+            loop      : 'all',
+            order     : 'random',
+            preload   : 'auto',
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : 'aLIEz',
+                        artist : 'mizuki（瑞葵）',
+                        cover  : '/music/cover/aLIEz.jpg',
+                        url    : '/music/song/aLIEz.mp3',
+                        lrc    : '/music/lrc/aLIEz.lrc'
+                    },
+                
+                    {
+                        name   : 'Endless Tears',
+                        artist : 'CLIFF EDGE',
+                        cover  : '/music/cover/Endless Tears.jpg',
+                        url    : '/music/song/Endless Tears.mp3',
+                        lrc    : '/music/lrc/Endless Tears.lrc'
+                    },
+                
+                    {
+                        name   : 'Miracle',
+                        artist : 'Cascada',
+                        cover  : '/music/cover/Miracle.jpg',
+                        url    : '/music/song/Miracle.mp3',
+                        lrc    : '/music/lrc/Miracle.lrc'
+                    },
+                
+                    {
+                        name   : 'Roll The Dice',
+                        artist : '高珊',
+                        cover  : '/music/cover/Roll The Dice.jpg',
+                        url    : '/music/song/Roll The Dice.mp3',
+                        lrc    : '/music/lrc/Roll The Dice.lrc'
+                    },
+                
+                    {
+                        name   : 'See You Again',
+                        artist : 'Charlie Puth, Wiz Khalifa',
+                        cover  : '/music/cover/See You Again.jpg',
+                        url    : '/music/song/See You Again.mp3',
+                        lrc    : '/music/lrc/See You Again.lrc'
+                    },
+                
+                    {
+                        name   : 'Traveling Light',
+                        artist : 'Joel Hanson, Sara Groves',
+                        cover  : '/music/cover/Traveling Light.jpg',
+                        url    : '/music/song/Traveling Light.mp3',
+                        lrc    : '/music/lrc/Traveling Light.lrc'
+                    },
+                
+                    {
+                        name   : '痴心绝对',
+                        artist : '李圣杰',
+                        cover  : '/music/cover/痴心绝对.jpg',
+                        url    : '/music/song/痴心绝对.mp3',
+                        lrc    : '/music/lrc/痴心绝对.lrc'
+                    },
+                
+                    {
+                        name   : '好想大声说爱你',
+                        artist : 'BAAD（バード）',
+                        cover  : '/music/cover/好想大声说爱你.jpg',
+                        url    : '/music/song/好想大声说爱你.mp3',
+                        lrc    : '/music/lrc/好想大声说爱你.lrc'
+                    },
+                
+            ]
+        },
+        Meting : {
+            id       : '3778678', 
+            lrcshow  : false, 
+            server   : 'netease', 
+            type     : 'playlist', 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : 'all', 
+            order    : 'random', 
+            preload  : 'auto', 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        LazyLoad : {
+            default : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/lazyload.svg'
+        },
+  
+        Style : {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/APlayer.css',
+            archive          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/archive.css',
+            donate           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/donate.css',
+            fancybox         : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/jquery.fancybox.css',
+            footer           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/footer.css',
+            iconfont         : 'https://at.alicdn.com/t/font_1546312_l3yohatebw.css',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/index.css',
+            menuBubble       : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/menu-bubble.css',
+            page             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/page.css',
+            post             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css',
+            search           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css',
+            tocbot           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/tocbot.css',
+            normal           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css',
+            night            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/night.css',
+            clipboard        : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/clipboard.css'
+        },
+
+        Script: {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js',
+            config           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.config.js',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js',
+            instantSearch    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js',
+            jQuery           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js',
+            loading          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/loading.js',
+            meting           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js',
+            iscroll          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js',
+            require          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.min.js'
+        },
+
+        Font: {
+            LongCang   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css',
+            Monda      : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css',
+            NotoSansSC : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css',
+            Playball   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css',
+            PTMono     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css',
+            RobotoSlab : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css',
+            Rosario    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css',
+            UbuntuMono : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css'
+        },
+
+        Suffix : {
+            about : '简单地活着, 肆意又精彩.'
+        },
+            
+        Theme : {
+            url  : 'https://github.com/first19326/Hexo-LiveForCode',
+            name : 'Hexo - Live For Code'
+        }  
+    };
+</script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>索引操作</title>
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css">
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css">
+    
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <a id="cover"></a>
+    <div id="header">
+    <div class="header">
+        <div class="vertical">
+            <div class="inner">
+                <h1 class="header-subtitle">索引操作</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2021-07-18
+                        </span>
+                        
+                            <span id="/2021/07/18/索引操作/" class="leancloud_visitors" data-flag-title="索引操作">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/07/18/索引操作/"></span>
+                        </span>  
+                    </p>                 
+                </div>
+            </div>
+        </div>
+        <canvas id="articleHeaderCanvas"></canvas>
+    </div>
+</div>
+    <div id="container">
+    <div id="content">
+        <div id="article">
+    <div class="toc"></div>
+    <div class="article-body">
+        <h3 id="创建索引"><a href="#创建索引" class="headerlink" title="创建索引"></a>创建索引</h3><p>对比关系型数据库，创建索引就等同于创建数据库。</p>
+<p>需要记住的是，创建索引需要使用 <code>PUT</code> 请求方式，且该类型的请求是幂等的，也就意味着，无法多次创建相同名称的索引！</p>
+<p>创建一个名称为 <code>test_index</code> 的索引：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"># 在 kibana 的 Dev Tools 对话框里，只需要这么写，就可以创建该索引了</span><br><span class="line">PUT test_index</span><br><span class="line"></span><br><span class="line"># 返回：</span><br><span class="line">&#123;</span><br><span class="line">  # 响应结果</span><br><span class="line">  &quot;acknowledged&quot; : true,</span><br><span class="line">  # 分片结果</span><br><span class="line">  &quot;shards_acknowledged&quot; : true,</span><br><span class="line">  # 索引名称</span><br><span class="line">  &quot;index&quot; : &quot;test_index&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 如果重复添加索引，会返回错误信息 </span><br><span class="line">&#123;</span><br><span class="line">  &quot;error&quot; : &#123;</span><br><span class="line">    &quot;root_cause&quot; : [</span><br><span class="line">      &#123;</span><br><span class="line">        &quot;type&quot; : &quot;resource_already_exists_exception&quot;,</span><br><span class="line">        &quot;reason&quot; : &quot;index [test_index/c6nJovSRSjSTTkpIgFy4-g] already exists&quot;,</span><br><span class="line">        &quot;index_uuid&quot; : &quot;c6nJovSRSjSTTkpIgFy4-g&quot;,</span><br><span class="line">        &quot;index&quot; : &quot;test_index&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    ],</span><br><span class="line">    &quot;type&quot; : &quot;resource_already_exists_exception&quot;,</span><br><span class="line">    &quot;reason&quot; : &quot;index [test_index/c6nJovSRSjSTTkpIgFy4-g] already exists&quot;,</span><br><span class="line">    &quot;index_uuid&quot; : &quot;c6nJovSRSjSTTkpIgFy4-g&quot;,</span><br><span class="line">    &quot;index&quot; : &quot;test_index&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;status&quot; : 400</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>题外话，使用 PostMan工具或者在 Head插件上都是可以正常操作的（后续都在 kibana中操作演示）。如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 选择 PUT请求方式</span><br><span class="line">http:192.168.137.223:9200/test_index</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看索引"><a href="#查看索引" class="headerlink" title="查看索引"></a>查看索引</h3><p>可以 Elasticsearch Head插件页面上看到：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/00157.png" alt="image"></p>
+<p>也可以向 ES 服务器发 GET 请求，查看索引信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"># 查看指定名称的索引，如 test_index</span><br><span class="line">GET test_index</span><br><span class="line"></span><br><span class="line"># 结果为</span><br><span class="line">&#123;</span><br><span class="line">  # 索引名</span><br><span class="line">  &quot;test_index&quot; : &#123;</span><br><span class="line">    # 别名</span><br><span class="line">    &quot;aliases&quot; : &#123; &#125;,</span><br><span class="line">    # 映射</span><br><span class="line">    &quot;mappings&quot; : &#123; &#125;,</span><br><span class="line">    # 设置</span><br><span class="line">    &quot;settings&quot; : &#123;</span><br><span class="line">      # 设置 - 索引</span><br><span class="line">      &quot;index&quot; : &#123;</span><br><span class="line">        &quot;routing&quot; : &#123;</span><br><span class="line">          &quot;allocation&quot; : &#123;</span><br><span class="line">            &quot;include&quot; : &#123;</span><br><span class="line">              &quot;_tier_preference&quot; : &quot;data_content&quot;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        # 设置 - 索引 - 主分片数量</span><br><span class="line">        &quot;number_of_shards&quot; : &quot;1&quot;,</span><br><span class="line">        # 设置 - 索引 - 名称</span><br><span class="line">        &quot;provided_name&quot; : &quot;test_index&quot;,</span><br><span class="line">        # 设置 - 索引 - 创建时间</span><br><span class="line">        &quot;creation_date&quot; : &quot;1621175229003&quot;,</span><br><span class="line">        # 设置 - 索引 - 副分片数量</span><br><span class="line">        &quot;number_of_replicas&quot; : &quot;1&quot;,</span><br><span class="line">        设置 - 索引 - 编号</span><br><span class="line">        &quot;uuid&quot; : &quot;bRJGP3RSQIaYxqLxmZRkYg&quot;,</span><br><span class="line">        # 设置 - 索引 - 版本</span><br><span class="line">        &quot;version&quot; : &#123;</span><br><span class="line">          &quot;created&quot; : &quot;7120099&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 查看 ES下所有的索引，_cat 表示查看的意思，indices 表示索引</span><br><span class="line">GET _cat/indices?v</span><br><span class="line"></span><br><span class="line"># 结果为</span><br><span class="line">health status index      uuid                   pri rep docs.count docs.deleted store.size pri.store.size</span><br><span class="line">yellow open   test_index bRJGP3RSQIaYxqLxmZRkYg   1   1          0            0       208b           208b</span><br></pre></td></tr></table></figure>
+
+<p>上述查看所有索引返回的列表具体含义是：</p>
+<table>
+<thead>
+<tr>
+<th>表头</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>health</td>
+<td>当前服务器健康状态： green(集群完整)， yellow(单点正常、集群不完整)， red(单点不正常)</td>
+</tr>
+<tr>
+<td>status</td>
+<td>索引打开、关闭状态</td>
+</tr>
+<tr>
+<td>index</td>
+<td>索引名</td>
+</tr>
+<tr>
+<td>uuid</td>
+<td>索引统一编号</td>
+</tr>
+<tr>
+<td>pri</td>
+<td>主分片数量</td>
+</tr>
+<tr>
+<td>rep</td>
+<td>副本数量</td>
+</tr>
+<tr>
+<td>docs.count</td>
+<td>可用文档数量</td>
+</tr>
+<tr>
+<td>docs.deleted</td>
+<td>文档删除状态（逻辑删除）</td>
+</tr>
+<tr>
+<td>store.size</td>
+<td>主分片和副分片整体占空间大小</td>
+</tr>
+<tr>
+<td>pri.store.size</td>
+<td>主分片占空间大小</td>
+</tr>
+</tbody></table>
+<h3 id="删除索引"><a href="#删除索引" class="headerlink" title="删除索引"></a>删除索引</h3><p>删除索引也很简单，遵循 RestFul风格，只需要将请求类型改为 <code>DELETE</code> 即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DELETE test_index</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>示例，创建一个索引：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT &#x27;http:<span class="comment">//10.123.7.3:9200/test_index&#x27; -H &#x27;Content-Type: application/json&#x27; -d &#x27;&#123;</span></span><br><span class="line"> <span class="string">&quot;settings&quot;</span>: &#123;</span><br><span class="line">  <span class="attr">&quot;index&quot;</span>: &#123;</span><br><span class="line">   <span class="attr">&quot;number_of_shards&quot;</span>: <span class="string">&quot;5&quot;</span>,</span><br><span class="line">   <span class="attr">&quot;number_of_replicas&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">   <span class="attr">&quot;max_result_window&quot;</span> :<span class="string">&quot;60000&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line"> &#125;,</span><br><span class="line"> <span class="string">&quot;mappings&quot;</span>: &#123;</span><br><span class="line">  <span class="attr">&quot;wellenRoute&quot;</span>: &#123;</span><br><span class="line">   <span class="attr">&quot;properties&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;wellenId&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenCode&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;nationalLineType&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenType&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenStatus&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;issueTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;issueUser&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;pickType&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;priorityLevel&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;operatorGroupName&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;batchNum&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;index&quot;</span>: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;packageNum&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;index&quot;</span>: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;taskNum&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;long&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;index&quot;</span>: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;shouldPickNum&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;long&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;index&quot;</span>: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;realPickNum&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;long&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;index&quot;</span>: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;isCombine&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;boolean&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;packType&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;boolean&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;combineWellenType&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;combineAddress&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenMark&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenMarkStr&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;downwindAreaId&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;collectTips&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;isAbc&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenConfigId&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;wellenConfigName&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;coWellenCode&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;warehouseId&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;subWarehouseIdList&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;fields&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;keyword&quot;</span>: &#123;</span><br><span class="line">       <span class="attr">&quot;ignore_above&quot;</span>: <span class="number">256</span>,</span><br><span class="line">       <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">     &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;createTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;lastUpdateTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;packageLabelNumMark&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;boolean&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;createType&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;mainCollectionUser&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;mainCollectionTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;firstSowingStartTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;firstSowingEndTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;secondSowingStartTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;secondSowingEndTime&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;firstSowingUserName&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;operateSubWarehouseId&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;areaId&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;isDelete&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;boolean&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramIntegerOne&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramIntegerTwo&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramLongOne&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;long&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramLongTwo&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;long&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramStringOne&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramStringTwo&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramStringThree&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramStringFour&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramDateOne&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;paramDateTwo&quot;</span>: &#123;</span><br><span class="line">     <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span>,</span><br><span class="line">     <span class="attr">&quot;format&quot;</span>: <span class="string">&quot;yyyy-MM-dd HH:mm:ss||epoch_millis&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;&#x27;</span><br></pre></td></tr></table></figure>
+        <p class="suffix-end">__END__</p>
+        <div class="suffix-box">
+            <div class="suffix-box-left">
+                <img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg" alt="tianluye">
+            </div>
+            <div class="suffix-box-right">
+                <span class="suffix-box-title">文章作者</span>：tianluye
+                <br>
+                <span class="suffix-box-title">文章出处</span>：<a href="https://tianluye.github.io/2021/07/18/索引操作/" target="_blank">索引操作</a>
+                <br>
+                <span class="suffix-box-title">作者签名</span>：道无涯，学无止境
+                <br>
+                <span class="suffix-box-title">关于主题</span>：<a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - Live For Code</a>
+                <br>
+                <span class="suffix-box-title">版权声明</span>：文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+                <br>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div class="article-footer">
+        
+            <div class="category">
+                分类：
+                
+                    <a href="/categories/ElasticSerach/">ElasticSerach</a>
+                
+            </div>
+        
+        
+            <div class="tag">
+                标签：
+                
+                    <a href="/tags/%E6%90%9C%E7%B4%A2/">搜索</a>
+                
+                    <a href="/tags/ElasticSerach/">ElasticSerach</a>
+                
+            </div>
+        
+        <div class="article-prev-next">
+            
+                <a href="/2021/07/18/ES%E6%96%87%E6%A1%A3%E6%93%8D%E4%BD%9C/" class="prev-prefix">« </a> 上一篇：    <a href="/2021/07/18/ES%E6%96%87%E6%A1%A3%E6%93%8D%E4%BD%9C/" title="发布于 2021-07-18 04:25">ES文档操作</a>
+                <br>
+            
+            
+                <a href="/2021/07/18/Elasticsearch%E5%88%9D%E8%AF%86/" class="next-prefix">» </a> 下一篇：    <a href="/2021/07/18/Elasticsearch%E5%88%9D%E8%AF%86/" title="发布于 2021-07-18 11:11">Elasticsearch初识</a>
+            
+        </div>
+    </div>
+    
+    <div class="article-comments">
+        <div class="comments-title">
+            评论列表
+        </div>
+        <div class="comments-content">
+        </div>
+    </div>
+
+</div>
+
+    </div>
+</div>
+    <div id="footer"></div>
+
+<script src='https://unpkg.com/mermaid@7.1.2/dist/mermaid.min.js'></script>
+<script>
+    if (window.mermaid) {
+      mermaid.initialize({theme: 'forest'});
+    }
+</script>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar"></div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user"><span></span></div>        
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul></ul> 
+            </div> 
+            <div class="menu-link"></div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/APlayer.css">
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js"></script>
+        <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+    
+    
+    <div class="wrap-right"></div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : 'tianluye',
+        GitHubRepositories : 'tianluye.github.io',
+
+        BlogUser      : 'Tian Lu Ye',
+        BlogAvatar    : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg',
+        BlogStartDate : '2021-07-17',
+
+        WebsiteTitleBlur         : '(◍´꒳`◍) tly blog',
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : '(*´∇｀*) 欢迎回来!',
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/logo.png',
+
+        ProgressBar: {
+            id       : 'topProgressBar',
+            color    : '#77B6FF',
+            height   : '2px',
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound: {
+                tension  : 16,
+                friction : 5
+            },
+            spinner: {
+                id     : 'spinner',
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : '#F0F0F0',
+                    stroke     : '#272633',
+                    base       : '',
+                    child      : '#272633'
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : 'rgba(255, 255, 255, .2)',
+            clearOffset : 0.3
+        },
+
+        ArticleHeaderAnimationRendered : false,
+        ArticleHeaderAnimation         : {
+            triW                  : 14,
+            triH                  : 20,
+            neighbours            : [
+                
+                    'side',
+                
+                    'top',
+                
+                    'bottom',
+                
+            ],
+            speedTrailAppear      : 0.1,
+            speedTrailDisappear   : 0.1,
+            speedTriOpen          : 1,
+            trailMaxLength        : 30,
+            trailIntervalCreation : 100,
+            delayBeforeDisappear  : 2,
+            colors                : [
+                
+                    '#96EDA6',
+                
+                    '#5BC6A9',
+                
+                    '#38668C',
+                
+                    '#374D84',
+                
+                    '#BED5CB',
+                
+                    '#62ADC6',
+                
+                    '#8EE5DE',
+                
+                    '#304E7B',
+                
+            ]
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : '60%',
+            colorBrightness  : '50%',
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : 'random',
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home.jpg',
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home2.jpg',
+            
+                'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/home3.jpg',
+            
+        ],
+        HomeBannerText  : '道无涯,学无止境',
+
+        ArticleHeaderImage : [
+            
+                'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/header/article.jpg',
+            
+        ],
+
+        OtherBannerText : '',
+
+        MenuList : [
+            
+                {
+                    name   : '首页',
+                    href   : '/',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '标签',
+                    href   : '/tags',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '分类',
+                    href   : '/categories',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '归档',
+                    href   : '/archives',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '赞赏',
+                    href   : '/donate',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '关于',
+                    href   : '/about',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '订阅',
+                    href   : '/atom.xml',    
+                    target : '_blank',
+                    class  : ''
+                },
+            
+                {
+                    name   : '搜索',
+                    href   : '',    
+                    target : '',
+                    class  : 'search'
+                },
+            
+                {
+                    name   : '留言板',
+                    href   : '/comment',    
+                    target : '',
+                    class  : ''
+                },
+            
+                {
+                    name   : '友情链接',
+                    href   : '/friend',    
+                    target : '',
+                    class  : ''
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        icon : 'icon-weibo', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-wechat', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-qq', 
+                        url  : ''
+                    },
+                
+                    {
+                        icon : 'icon-github', 
+                        url  : 'https://github.com/tianluye'
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : {
+            icon    : 'like-fill',
+            left    : '人生若只如初见',
+            right   : '何事秋风悲画扇'
+        },
+        ThemeInfo   : true,
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                'Based on cnblogs theme SimpleMemory.',
+                            
+                                '',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'SimpleMemory Author:',
+                            
+                                'BNDong',
+                            
+                        
+                    ],
+                
+                    [
+                        
+                            
+                                'Theme:',
+                            
+                                'LiveForCode',
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : '',
+
+        Donate : {
+            paypal  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/alipay.jpg',
+            bitcoin : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/wechat.jpg',
+            alipay  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/alipay.jpg',
+            wechat  : 'https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/wechat.jpg'
+        },
+
+        Code : {
+            style : 'normal'
+        },  
+
+        Search : {
+            applicationID : '010C3EANT8',
+            apiKey        : 'c7abab9f11b79102b9aff7fe6d41447d',
+            indexName     : 'Notes',
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : '搜索',
+                empty       : '未发现与 「${query}」 相关的内容',
+                stats       : '${hits} 条相关条目，使用了 ${time} 毫秒',
+            }
+        }, 
+
+        Valine : {
+            switch         : true,
+            el             : '.comments-content',
+            appId          : 'mFAYekF8kAQHI6MrWrBjbpkp-gzGzoHsz',
+            appKey         : 'RCFNxd1pPweMKgA5ccMDMh0V',
+            placeholder    : '你是我一生只会遇见一次的惊喜...',
+            avatar         : 'mm',
+            meta           : 'nick,mail,link',
+            requiredFields : 'nick,mail',
+            pageSize       : 5,
+            lang           : 'zh-cn',
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : '.toc',
+            contentSelector       : '.article-body',
+            headingSelector       : 'h1, h2, h3, h4, h5',
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : '.toc',
+            positionFixedClass    : 'toc-fixed',
+            fixedSidebarOffset    : '',
+        },
+
+        Require : {
+            baseUrl     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/',
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : 'Meting'
+        },
+        APlayer : {
+            container : '.aplayer',
+            fixed     : true,
+            autoplay  : false,
+            loop      : 'all',
+            order     : 'random',
+            preload   : 'auto',
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : 'aLIEz',
+                        artist : 'mizuki（瑞葵）',
+                        cover  : '/music/cover/aLIEz.jpg',
+                        url    : '/music/song/aLIEz.mp3',
+                        lrc    : '/music/lrc/aLIEz.lrc'
+                    },
+                
+                    {
+                        name   : 'Endless Tears',
+                        artist : 'CLIFF EDGE',
+                        cover  : '/music/cover/Endless Tears.jpg',
+                        url    : '/music/song/Endless Tears.mp3',
+                        lrc    : '/music/lrc/Endless Tears.lrc'
+                    },
+                
+                    {
+                        name   : 'Miracle',
+                        artist : 'Cascada',
+                        cover  : '/music/cover/Miracle.jpg',
+                        url    : '/music/song/Miracle.mp3',
+                        lrc    : '/music/lrc/Miracle.lrc'
+                    },
+                
+                    {
+                        name   : 'Roll The Dice',
+                        artist : '高珊',
+                        cover  : '/music/cover/Roll The Dice.jpg',
+                        url    : '/music/song/Roll The Dice.mp3',
+                        lrc    : '/music/lrc/Roll The Dice.lrc'
+                    },
+                
+                    {
+                        name   : 'See You Again',
+                        artist : 'Charlie Puth, Wiz Khalifa',
+                        cover  : '/music/cover/See You Again.jpg',
+                        url    : '/music/song/See You Again.mp3',
+                        lrc    : '/music/lrc/See You Again.lrc'
+                    },
+                
+                    {
+                        name   : 'Traveling Light',
+                        artist : 'Joel Hanson, Sara Groves',
+                        cover  : '/music/cover/Traveling Light.jpg',
+                        url    : '/music/song/Traveling Light.mp3',
+                        lrc    : '/music/lrc/Traveling Light.lrc'
+                    },
+                
+                    {
+                        name   : '痴心绝对',
+                        artist : '李圣杰',
+                        cover  : '/music/cover/痴心绝对.jpg',
+                        url    : '/music/song/痴心绝对.mp3',
+                        lrc    : '/music/lrc/痴心绝对.lrc'
+                    },
+                
+                    {
+                        name   : '好想大声说爱你',
+                        artist : 'BAAD（バード）',
+                        cover  : '/music/cover/好想大声说爱你.jpg',
+                        url    : '/music/song/好想大声说爱你.mp3',
+                        lrc    : '/music/lrc/好想大声说爱你.lrc'
+                    },
+                
+            ]
+        },
+        Meting : {
+            id       : '3778678', 
+            lrcshow  : false, 
+            server   : 'netease', 
+            type     : 'playlist', 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : 'all', 
+            order    : 'random', 
+            preload  : 'auto', 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        LazyLoad : {
+            default : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/image/website/lazyload.svg'
+        },
+  
+        Style : {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/APlayer.css',
+            archive          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/archive.css',
+            donate           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/donate.css',
+            fancybox         : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/jquery.fancybox.css',
+            footer           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/footer.css',
+            iconfont         : 'https://at.alicdn.com/t/font_1546312_l3yohatebw.css',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/index.css',
+            menuBubble       : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/menu-bubble.css',
+            page             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/page.css',
+            post             : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css',
+            search           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/search.css',
+            tocbot           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/tocbot.css',
+            normal           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css',
+            night            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/night.css',
+            clipboard        : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/clipboard.css'
+        },
+
+        Script: {
+            aplayer          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/APlayer.min.js',
+            config           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.config.js',
+            index            : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js',
+            instantSearch    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/instantsearch.min.js',
+            jQuery           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js',
+            loading          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/loading.js',
+            meting           : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/Meting.min.js',
+            iscroll          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/iscroll.js',
+            require          : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/require.min.js'
+        },
+
+        Font: {
+            LongCang   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css',
+            Monda      : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css',
+            NotoSansSC : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/NotoSansSC.css',
+            Playball   : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Playball.css',
+            PTMono     : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/PTMono.css',
+            RobotoSlab : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/RobotoSlab.css',
+            Rosario    : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css',
+            UbuntuMono : 'https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css'
+        },
+
+        Suffix : {
+            about : '简单地活着, 肆意又精彩.'
+        },
+            
+        Theme : {
+            url  : 'https://github.com/first19326/Hexo-LiveForCode',
+            name : 'Hexo - Live For Code'
+        }  
+    };
+</script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/index.js"></script>
+</body>
+</html>
