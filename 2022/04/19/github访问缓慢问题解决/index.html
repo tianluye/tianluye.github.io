@@ -6,7 +6,7 @@
     <meta name="referrer" content="origin">
     <meta http-equiv="Cache-Control" content="no-transform">
     <meta http-equiv="Cache-Control" content="no-siteapp">
-    <title>Tianluye</title>
+    <title>github访问缓慢问题解决</title>
 
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css">
@@ -17,311 +17,120 @@
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css">
 
-    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/index.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css">
+    
+        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css">
+    
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js"></script>
+
 <meta name="generator" content="Hexo 5.4.0"></head>
 <body>
     <a id="cover"></a>
     <div id="header">
-    <div class="header" >
+    <div class="header">
         <div class="vertical">
             <div class="inner">
-                <h1 class="header-title"></h1>
-                <h2 class="header-description" id="hitokoto"></h2>
-                <h3 class="header-info" id="hitokotoAuthor"></h3>
-                <!--
-                <h1 class="header-subtitle"></h1>
-                <p class="header-subinfo"></p>
-                -->
+                <h1 class="header-subtitle">github访问缓慢问题解决</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2022-04-19
+                        </span>
+                        
+                            <span id="/2022/04/19/github访问缓慢问题解决/" class="leancloud_visitors" data-flag-title="github访问缓慢问题解决">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2022/04/19/github访问缓慢问题解决/"></span>
+                        </span>  
+                    </p>                 
+                </div>
             </div>
         </div>
-        <a class="scroll-down" href="javascript:;" target="_self" data-offset="-45">
-            <span class="hidden">Scroll Down</span>
-            <i class="scroll-down-icon iconfont icon-return"></i>
-        </a>
+        <canvas id="articleHeaderCanvas"></canvas>
     </div>
 </div>
     <div id="container">
     <div id="content">
-        <div class="articles">
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2021/07/18/Elasticsearch%E5%88%9D%E8%AF%86/">Elasticsearch初识</a>
-                
-                    <span class="article-sticky">置顶</span>
-                
+        <div id="article">
+    <div class="toc"></div>
+    <div class="article-body">
+        <p>自己访问博客地址： <code>https://tianluye.github.io/ </code></p>
+<p>发下特别慢，于是乎想到有没有类似于镜像配置，可以让我快速访问。不懂就问百度，哈哈，还真的有，具体操作如下：</p>
+<h4 id="1、修改-hosts文件"><a href="#1、修改-hosts文件" class="headerlink" title="1、修改 hosts文件"></a>1、修改 hosts文件</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">## Mac</span><br><span class="line">$ sudo vim /etc/hosts</span><br><span class="line"></span><br><span class="line">## Windows</span><br><span class="line">C:\Windows\System32\drivers\etc\hosts</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、将以下内容复制到-hosts文件中"><a href="#2、将以下内容复制到-hosts文件中" class="headerlink" title="2、将以下内容复制到 hosts文件中"></a>2、将以下内容复制到 hosts文件中</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># github</span><br><span class="line">151.101.185.194 github.global.ssl.fastly.net</span><br><span class="line">192.30.253.112 github.com </span><br><span class="line">151.101.112.133 assets-cdn.github.com </span><br><span class="line">151.101.184.133 assets-cdn.github.com </span><br><span class="line">185.199.108.153 documentcloud.github.com </span><br><span class="line">192.30.253.118 gist.github.com</span><br><span class="line">185.199.108.153 help.github.com </span><br><span class="line">192.30.253.120 nodeload.github.com </span><br><span class="line">151.101.112.133 raw.github.com </span><br><span class="line">23.21.63.56 status.github.com </span><br><span class="line">192.30.253.1668 training.github.com </span><br><span class="line">192.30.253.112 www.github.com </span><br><span class="line">151.101.13.194 github.global.ssl.fastly.net </span><br><span class="line">151.101.12.133 avatars0.githubusercontent.com </span><br><span class="line">151.101.112.133 avatars1.githubusercontent.com</span><br><span class="line">140.82.114.4 github.com</span><br><span class="line">199.232.5.194 github.global.ssl.fastly.net</span><br></pre></td></tr></table></figure>
+
+<h4 id="3、刷新-DNS"><a href="#3、刷新-DNS" class="headerlink" title="3、刷新 DNS"></a>3、刷新 DNS</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">## Mac</span><br><span class="line">dscacheutil -flushcache</span><br><span class="line"></span><br><span class="line">## Windows</span><br><span class="line">ipconfig/flushdns</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h4><p>Github的 IP地址是不断变化的，如果发现网站打不开了，可以获取新的 IP地址修改 hosts里面的内容，方式如下：</p>
+<p>在网站 <a target="_blank" rel="noopener" href="https://www.ipaddress.com/">https://www.ipaddress.com/</a> 输入你要解析的域名</p>
+<p>例如：github.com的 IP获取方式，在输入框输入以下内容：git</p>
+<ul>
+<li>github.com</li>
+<li>github.githubassets.com</li>
+<li>github.global.ssl.fastly.net</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/00168.jpg" alt="image"></p>
+
+        <p class="suffix-end">__END__</p>
+        <div class="suffix-box">
+            <div class="suffix-box-left">
+                <img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg" alt="tianluye">
             </div>
-            <div class="article-abstract">
-                
-                    摘要：Elasticsearch初识.
-                    <a href="/2021/07/18/Elasticsearch%E5%88%9D%E8%AF%86/">阅读全文</a>
-                
+            <div class="suffix-box-right">
+                <span class="suffix-box-title">文章作者</span>：tianluye
+                <br>
+                <span class="suffix-box-title">文章出处</span>：<a href="https://tianluye.github.io/2021/07/17/LinkedList/" target="_blank">github访问缓慢问题解决</a>
+                <br>
+                <span class="suffix-box-title">作者签名</span>：道无涯，学无止境
+                <br>
+                <span class="suffix-box-title">关于主题</span>：<a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - Live For Code</a>
+                <br>
+                <span class="suffix-box-title">版权声明</span>：文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+                <br>
             </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2021-07-18
-                </span>
-                
-                    <span id="/2021/07/18/Elasticsearch初识/" class="leancloud_visitors" data-flag-title="Elasticsearch初识">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/07/18/Elasticsearch初识/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
+            <div style="clear: both;"></div>
         </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2022/04/19/github%E8%AE%BF%E9%97%AE%E7%BC%93%E6%85%A2%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/">github访问缓慢问题解决</a>
+    </div>
+    <div class="article-footer">
+        
+            <div class="category">
+                分类：
+                
+                    <a href="/categories/%E7%B3%BB%E7%BB%9F/">系统</a>
                 
             </div>
-            <div class="article-abstract">
+        
+        
+            <div class="tag">
+                标签：
+                
+                    <a href="/tags/github/">github</a>
+                
+                    <a href="/tags/%E7%B3%BB%E7%BB%9F/">系统</a>
                 
             </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2022-04-19
-                </span>
-                
-                    <span id="/2022/04/19/github访问缓慢问题解决/" class="leancloud_visitors" data-flag-title="github访问缓慢问题解决">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2022/04/19/github访问缓慢问题解决/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
+        
+        <div class="article-prev-next">
+            
+            
+                <a href="/2022/03/02/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="next-prefix">» </a> 下一篇：    <a href="/2022/03/02/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" title="发布于 2022-03-02 10:36">线程池</a>
+            
         </div>
+    </div>
     
-        <div class="article">
-            <div class="article-title">
-                <a href="/2021/07/17/LinkedList/">LinkedList</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-                    摘要：链表数组.
-                    <a href="/2021/07/17/LinkedList/">阅读全文</a>
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2021-07-17
-                </span>
-                
-                    <span id="/2021/07/17/LinkedList/" class="leancloud_visitors" data-flag-title="LinkedList">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/07/17/LinkedList/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
+    <div class="article-comments">
+        <div class="comments-title">
+            评论列表
         </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2022/03/02/%E7%BA%BF%E7%A8%8B%E6%B1%A0/">线程池</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2022-03-02
-                </span>
-                
-                    <span id="/2022/03/02/线程池/" class="leancloud_visitors" data-flag-title="线程池">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2022/03/02/线程池/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
+        <div class="comments-content">
         </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2022/03/02/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%BD%BF%E7%94%A8%E8%B8%A9%E5%9D%91/">线程池使用踩坑</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2022-03-02
-                </span>
-                
-                    <span id="/2022/03/02/线程池使用踩坑/" class="leancloud_visitors" data-flag-title="线程池使用踩坑">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2022/03/02/线程池使用踩坑/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
-        </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2022/01/29/PageHelper%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">PageHelper原理分析</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2022-01-29
-                </span>
-                
-                    <span id="/2022/01/29/PageHelper原理分析/" class="leancloud_visitors" data-flag-title="PageHelper原理分析">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2022/01/29/PageHelper原理分析/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
-        </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2021/08/12/Elastic-Search-%E8%BF%91%E5%AE%9E%E6%97%B6%E6%90%9C%E7%B4%A2%E5%88%86%E6%9E%90/">Elastic Search 近实时搜索分析</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-                    摘要：Elastic Search 近实时搜索分析.
-                    <a href="/2021/08/12/Elastic-Search-%E8%BF%91%E5%AE%9E%E6%97%B6%E6%90%9C%E7%B4%A2%E5%88%86%E6%9E%90/">阅读全文</a>
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2021-08-12
-                </span>
-                
-                    <span id="/2021/08/12/Elastic-Search-近实时搜索分析/" class="leancloud_visitors" data-flag-title="Elastic Search 近实时搜索分析">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/08/12/Elastic-Search-近实时搜索分析/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
-        </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2021/08/12/ES-refresh/">ES refresh</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-                    摘要：ES refresh.
-                    <a href="/2021/08/12/ES-refresh/">阅读全文</a>
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2021-08-12
-                </span>
-                
-                    <span id="/2021/08/12/ES-refresh/" class="leancloud_visitors" data-flag-title="ES refresh">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/08/12/ES-refresh/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
-        </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2021/08/11/DeclareParents%E6%B3%A8%E8%A7%A3/">DeclareParents注解</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2021-08-11
-                </span>
-                
-                    <span id="/2021/08/11/DeclareParents注解/" class="leancloud_visitors" data-flag-title="DeclareParents注解">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/08/11/DeclareParents注解/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
-        </div>
-    
-        <div class="article">
-            <div class="article-title">
-                <a href="/2021/07/18/BoolQueryBuilder-toString%E9%97%AE%E9%A2%98/">BoolQueryBuilder toString问题</a>
-                
-            </div>
-            <div class="article-abstract">
-                
-                    摘要：BoolQueryBuilder toString问题.
-                    <a href="/2021/07/18/BoolQueryBuilder-toString%E9%97%AE%E9%A2%98/">阅读全文</a>
-                
-            </div>
-            <div class="clear"></div>
-            <div class="article-info">
-                <span>
-                    <i class="iconfont icon-time"></i> 发表时间：2021-07-18
-                </span>
-                
-                    <span id="/2021/07/18/BoolQueryBuilder-toString问题/" class="leancloud_visitors" data-flag-title="BoolQueryBuilder toString问题">
-                        <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                    </span>
-                
-                <span>
-                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2021/07/18/BoolQueryBuilder-toString问题/"></span>
-                </span>
-            </div>
-            <div class="clear"></div>     
-        </div>
-    
-    
-        <div class="pagination-bottom">
-            <div class="pagination">
-                
-                    <a href="/page/2/">下一页</a>
-                
-            </div>
-        </div>
-    
+    </div>
+
 </div>
 
     </div>
