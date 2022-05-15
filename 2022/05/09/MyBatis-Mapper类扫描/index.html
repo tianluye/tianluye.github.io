@@ -6,8 +6,7 @@
     <meta name="referrer" content="origin">
     <meta http-equiv="Cache-Control" content="no-transform">
     <meta http-equiv="Cache-Control" content="no-siteapp">
-    
-    <title>分类</title>
+    <title>MyBatis Mapper类扫描</title>
 
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/LongCang.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Monda.css">
@@ -18,12 +17,13 @@
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/Rosario.css">
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/font/UbuntuMono.css">
 
-    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/page.css">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/post.css">
     
         <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/css/normal.css">
     
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/first19326/cdn@master/static/js/jquery-3.4.1.min.js"></script>
+
 <meta name="generator" content="Hexo 5.4.0"></head>
 <body>
     <a id="cover"></a>
@@ -31,10 +31,21 @@
     <div class="header">
         <div class="vertical">
             <div class="inner">
-                <h1 class="header-subtitle">分类</h1>
+                <h1 class="header-subtitle">MyBatis Mapper类扫描</h1>
                 <div class="header-subinfo">
-                    <p class="article-info-text Chinese"></p>
-                    <p class="article-info-text English"></p>                  
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2022-05-09
+                        </span>
+                        
+                            <span id="/2022/05/09/MyBatis-Mapper类扫描/" class="leancloud_visitors" data-flag-title="MyBatis Mapper类扫描">
+                                <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                            </span>
+                        
+                        <span>
+                            <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/2022/05/09/MyBatis-Mapper类扫描/"></span>
+                        </span>  
+                    </p>                 
                 </div>
             </div>
         </div>
@@ -43,14 +54,73 @@
 </div>
     <div id="container">
     <div id="content">
-        <div class="categories">
-    <div class="categories-title">
-        目前共计 8 个分类
+        <div id="article">
+    <div class="toc"></div>
+    <div class="article-body">
+        <h3 id="Spring-Boot与MyBatis融合的矛盾问题"><a href="#Spring-Boot与MyBatis融合的矛盾问题" class="headerlink" title="Spring Boot与MyBatis融合的矛盾问题"></a>Spring Boot与MyBatis融合的矛盾问题</h3><p>Spring家族的使命就是为了简化而生，但是随着Spring的发展壮大，有点事与愿违了。为了坚持初心，Spring家族祭出了一大杀器—Spring Boot。Spring Boot的核心理念是：不建议使用xml文件配置。但是，这对MyBatis来说进退两难，因为MyBatis离不开xml，需要xml来配置sql语句。为了迎合Spring Boot的发展理念，MyBatis官方开发了<strong>mybatis-spring-boot-starter</strong>，我们要想更少的依赖xml，需要深入的研究mybatis-spring-boot-starter中的用法，尤其是**@MapperScan<strong>和</strong>@Mapper**的用法。</p>
+<h3 id="MapperScan和-Mapper的用法"><a href="#MapperScan和-Mapper的用法" class="headerlink" title="@MapperScan和@Mapper的用法"></a>@MapperScan和@Mapper的用法</h3><p>需要注意的是：两者同时使用的话，真正起作用的是 @MapperScan。它会按照注解配置的 class数组或者指定的包路径，进行扫描。将满足条件的 Mapper类，编译之后都会生成相应的实现类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Retention(RetentionPolicy.RUNTIME)</span></span><br><span class="line"><span class="meta">@Target(&#123;ElementType.TYPE&#125;)</span></span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Import(&#123;MapperScannerRegistrar.class&#125;)</span></span><br><span class="line"><span class="meta">@Repeatable(MapperScans.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> MapperScan &#123;</span><br><span class="line">    String[] value() <span class="keyword">default</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    String[] basePackages() <span class="keyword">default</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    Class&lt;?&gt;[] basePackageClasses() <span class="keyword">default</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    Class&lt;? extends BeanNameGenerator&gt; nameGenerator() <span class="keyword">default</span> BeanNameGenerator.class;</span><br><span class="line"></span><br><span class="line">    Class&lt;? extends Annotation&gt; annotationClass() <span class="keyword">default</span> Annotation.class;</span><br><span class="line"></span><br><span class="line">    Class&lt;?&gt; markerInterface() <span class="keyword">default</span> Class.class;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">sqlSessionTemplateRef</span><span class="params">()</span> <span class="keyword">default</span> &quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">sqlSessionFactoryRef</span><span class="params">()</span> <span class="keyword">default</span> &quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line">    Class&lt;? extends MapperFactoryBean&gt; factoryBean() <span class="keyword">default</span> MapperFactoryBean.class;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Inherited</span></span><br><span class="line"><span class="meta">@Retention(RetentionPolicy.RUNTIME)</span></span><br><span class="line"><span class="meta">@Target(&#123;ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Mapper &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为什么 @Mapper在存在 @MapperScan后就不生效了呢？下面来看下 <code>MybatisAutoConfiguration</code>配置类来寻找答案：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="comment">// 只有相关的数据源 bean信息存在的时候，那么才会进行初始化 Mybatis相关的 bean实例信息</span></span><br><span class="line"><span class="meta">@ConditionalOnClass(&#123;SqlSessionFactory.class, SqlSessionFactoryBean.class&#125;)</span></span><br><span class="line"><span class="meta">@ConditionalOnSingleCandidate(DataSource.class)</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties(&#123;MybatisProperties.class&#125;)</span></span><br><span class="line"><span class="meta">@AutoConfigureAfter(&#123;DataSourceAutoConfiguration.class&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MybatisAutoConfiguration</span> <span class="keyword">implements</span> <span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line">		......</span><br><span class="line">      </span><br><span class="line">    <span class="comment">// 仅仅当Spring上下文在中不存在 MapperFactoryBean 实例的时候，才会进行配置。</span></span><br><span class="line">    <span class="comment">// 而这个 MapperFactoryBean实例会在 @MapperScan的时候进行初始化  </span></span><br><span class="line">    <span class="meta">@Configuration</span></span><br><span class="line">    <span class="meta">@Import(&#123;MybatisAutoConfiguration.AutoConfiguredMapperScannerRegistrar.class&#125;)</span></span><br><span class="line">    <span class="meta">@ConditionalOnMissingBean(&#123;MapperFactoryBean.class&#125;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MapperScannerRegistrarNotFoundConfiguration</span> <span class="keyword">implements</span> <span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">MapperScannerRegistrarNotFoundConfiguration</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            MybatisAutoConfiguration.logger.debug(<span class="string">&quot;No &#123;&#125; found.&quot;</span>, MapperFactoryBean.class.getName());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">// 实现了 ImportBeanDefinitionRegistrar接口，用于向 Spring IOC中导入 bean</span></span><br><span class="line">  	<span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">AutoConfiguredMapperScannerRegistrar</span> <span class="keyword">implements</span> <span class="title">BeanFactoryAware</span>, <span class="title">ImportBeanDefinitionRegistrar</span>, <span class="title">ResourceLoaderAware</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> BeanFactory beanFactory;</span><br><span class="line">        <span class="keyword">private</span> ResourceLoader resourceLoader;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">AutoConfiguredMapperScannerRegistrar</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerBeanDefinitions</span><span class="params">(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (!AutoConfigurationPackages.has(<span class="keyword">this</span>.beanFactory)) &#123;</span><br><span class="line">                MybatisAutoConfiguration.logger.debug(<span class="string">&quot;Could not determine auto-configuration package, automatic mapper scanning disabled.&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                MybatisAutoConfiguration.logger.debug(<span class="string">&quot;Searching for mappers annotated with @Mapper&quot;</span>);</span><br><span class="line">                List&lt;String&gt; packages = AutoConfigurationPackages.get(<span class="keyword">this</span>.beanFactory);</span><br><span class="line">                <span class="keyword">if</span> (MybatisAutoConfiguration.logger.isDebugEnabled()) &#123;</span><br><span class="line">                    packages.forEach((pkg) -&gt; &#123;</span><br><span class="line">                        MybatisAutoConfiguration.logger.debug(<span class="string">&quot;Using auto-configuration base package &#x27;&#123;&#125;&#x27;&quot;</span>, pkg);</span><br><span class="line">                    &#125;);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                ClassPathMapperScanner scanner = <span class="keyword">new</span> ClassPathMapperScanner(registry);</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">this</span>.resourceLoader != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    scanner.setResourceLoader(<span class="keyword">this</span>.resourceLoader);</span><br><span class="line">                &#125;</span><br><span class="line">								<span class="comment">// 指定扫描 @Mapper注解标注的接口</span></span><br><span class="line">                scanner.setAnnotationClass(Mapper.class);</span><br><span class="line">                scanner.registerFilters();</span><br><span class="line">                scanner.doScan(StringUtils.toStringArray(packages));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      	......</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为 @MapperScan是标注再启动类或者配置类中的，所以优先级会高于 @Mapper注解。因此，两者同时存在的时候，@Mapper并不会生效！</p>
+
+        <p class="suffix-end">__END__</p>
+        <div class="suffix-box">
+            <div class="suffix-box-left">
+                <img src="https://cdn.jsdelivr.net/gh/tianluye/tianluye.github.io/image/avatar.jpg" alt="tianluye">
+            </div>
+            <div class="suffix-box-right">
+                <span class="suffix-box-title">文章作者</span>：tianluye
+                <br>
+                <span class="suffix-box-title">文章出处</span>：<a href="https://tianluye.github.io/2021/08/12/ES_refresh/" target="_blank">MyBatis Mapper类扫描</a>
+                <br>
+                <span class="suffix-box-title">作者签名</span>：每天进步一点点，加油！
+                <br>
+                <span class="suffix-box-title">关于主题</span>：<a href="https://github.com/first19326/Hexo-LiveForCode" target="_blank">Hexo - Live For Code</a>
+                <br>
+                <span class="suffix-box-title">版权声明</span>：文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+                <br>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
     </div>
-    <div class="categories-content">
-        <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/ElasticSerach/">ElasticSerach</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java%E5%9F%BA%E7%A1%80/">Java基础</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mapper/">Mapper</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/hexo/">hexo</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B9%B6%E5%8F%91/">并发</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%B3%BB%E7%BB%9F/">系统</a><span class="category-list-count">1</span></li></ul>
+    <div class="article-footer">
+        
+            <div class="category">
+                分类：
+                
+                    <a href="/categories/Mapper/">Mapper</a>
+                
+            </div>
+        
+        
+            <div class="tag">
+                标签：
+                
+                    <a href="/tags/Mybatis/">Mybatis</a>
+                
+            </div>
+        
+        <div class="article-prev-next">
+            
+            
+                <a href="/2022/04/19/github%E8%AE%BF%E9%97%AE%E7%BC%93%E6%85%A2%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/" class="next-prefix">» </a> 下一篇：    <a href="/2022/04/19/github%E8%AE%BF%E9%97%AE%E7%BC%93%E6%85%A2%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/" title="发布于 2022-04-19 10:03">github访问缓慢问题解决</a>
+            
+        </div>
     </div>
+    
+    <div class="article-comments">
+        <div class="comments-title">
+            评论列表
+        </div>
+        <div class="comments-content">
+        </div>
+    </div>
+
 </div>
+
     </div>
 </div>
     <div id="footer"></div>
